@@ -1,9 +1,10 @@
-package com.example.test;
+package battleships.views;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class HelloController {
+public class MainMenu
+{
     @FXML
     private Label welcomeText;
 
