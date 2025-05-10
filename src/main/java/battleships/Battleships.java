@@ -10,9 +10,9 @@ import java.io.IOException;
 public class Battleships extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Battleships.class.getResource("/battleships/hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
+        FXMLLoader fxmlLoader = new FXMLLoader(Battleships.class.getResource("views/main-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 900, 450);
+        stage.setTitle("Battleships - The Game");
         stage.setScene(scene);
         stage.show();
     }

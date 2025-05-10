@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+
+<HBox xmlns:fx="http://javafx.com/fxml" fx:controller="battleships.controllers.MainMenuController" spacing="20">
+    <fx:include fx:id="playerGrid" source="grid-view.fxml"/>
+    <fx:include fx:id="enemyGrid" source="grid-view.fxml"/>
+</HBox>
+
