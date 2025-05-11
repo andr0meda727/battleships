@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="battleships.controllers.DifficultyController"
+      xmlns:fx="http://javafx.com/fxml" spacing="10" alignment="CENTER">
+    <Label text="Wybierz poziom trudności:" prefHeight="25" prefWidth="150"/>
+    <ListView fx:id="difficulty" prefHeight="75" prefWidth="150"/>
+    <Label text="Wybrany poziom: " fx:id="chosen" prefHeight="25" prefWidth="150"/>
+</VBox>
