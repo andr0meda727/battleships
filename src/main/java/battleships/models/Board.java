@@ -13,8 +13,9 @@ public class Board {
     }
 
     private static final int BOARD_SIZE = 10;
-    public Cell[][] board;
     final List<Integer> shipLengths = new ArrayList<>(Arrays.asList(2, 3, 3, 4, 5));
+    private int shipsSunk;
+    public Cell[][] board;
 
     public Board() {
         board = new Cell[BOARD_SIZE][BOARD_SIZE];
@@ -103,11 +104,16 @@ public class Board {
             ship.hit();
 
             if (ship.isSunk()) {
+                shipsSunk++;
                 return attackResult.SUNK;
             }
             return attackResult.HIT;
         }
 
         return attackResult.MISS;
+    }
+
+    public boolean isGameOver() {
+        return shipsSunk == shipLengths.size();
     }
 }
