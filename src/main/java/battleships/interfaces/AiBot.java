@@ -1,7 +1,7 @@
 package battleships.interfaces;
 
-import java.util.List;
+import battleships.models.Board;
 
 public interface AiBot {
-    public void makeMove(int[][] playerBoard);
+    void makeMove(Board playerBoard);
 }

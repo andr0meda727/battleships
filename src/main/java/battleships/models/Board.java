@@ -1,5 +1,7 @@
 package battleships.models;
 
+import battleships.enums.attackResult;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,13 +10,6 @@ public class Board {
     private enum Direction {
         VERTICAL,
         HORIZONTAL
-    }
-
-    public enum AttackResult {
-        MISS,
-        HIT,
-        SUNK,
-        ALREADY_SHOT
     }
 
     private static final int BOARD_SIZE = 10;
@@ -95,11 +90,11 @@ public class Board {
         placeShips();
     }
 
-    private AttackResult receiveAttack(int row, int col) {
+    public attackResult receiveAttack(int row, int col) {
         Cell cell = board[row][col];
 
         if (cell.wasShot()) {
-            return AttackResult.ALREADY_SHOT;
+            return attackResult.ALREADY_SHOT;
         }
 
         cell.shoot();
@@ -110,12 +105,12 @@ public class Board {
 
             if (ship.isSunk()) {
                 shipsSunk++;
-                return AttackResult.SUNK;
+                return attackResult.SUNK;
             }
-            return AttackResult.HIT;
+            return attackResult.HIT;
         }
 
-        return AttackResult.MISS;
+        return attackResult.MISS;
     }
 
     public boolean isGameOver() {
