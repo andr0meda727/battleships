@@ -1,5 +1,7 @@
 package battleships.controllers;
 
+import battleships.models.Board;
+import battleships.models.Cell;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
@@ -25,6 +27,9 @@ public class MainMenuController {
         createGrid(playerGrid, "GRACZ");
         createGrid(enemyGrid, "PRZECIWNIK");
 
+        Board playerBoard = new Board();
+        Board enemyBoard = new Board();
+
         int[][] coordinates = {
                 {0, 0, 1, 0, 0, 0, 0, 0, 1, 0},
                 {0, 0, 1, 0, 0, 0, 1, 0, 1, 0},
@@ -37,15 +42,16 @@ public class MainMenuController {
                 {0, 0, 0, 1, 1, 1, 1, 1, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
-        colorGrid(playerGrid,coordinates);
+        colorGrid(playerGrid,playerBoard.board);
+        colorGrid(enemyGrid,enemyBoard.board);
     }
 
-    private void colorGrid(GridPane grid, int[][] coordinates){
+    private void colorGrid(GridPane grid, Cell[][] board){
         for (Node node : grid.getChildren()) {
             if (node instanceof Rectangle rect) {
                 int col = GridPane.getColumnIndex(rect);
                 int row = GridPane.getRowIndex(rect);
-                if (coordinates[row][col] == 1)
+                if (board[row][col].hasShip())
                     rect.setFill(Color.HOTPINK);
             }
         }
