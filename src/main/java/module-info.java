@@ -11,4 +11,9 @@ module battleships {
     exports battleships;
     exports battleships.models;
     exports battleships.controllers;
+    opens battleships.models.Board to javafx.fxml;
+    exports battleships.enums;
+    opens battleships.enums to javafx.fxml;
+    exports battleships.models.bots;
+    opens battleships.models.bots to javafx.fxml;
 }

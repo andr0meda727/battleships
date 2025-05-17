@@ -1,8 +1,8 @@
-package battleships.models;
+package battleships.models.bots;
 
 import battleships.interfaces.AiBot;
-import battleships.models.Board.Board;
-import battleships.models.Board.attackResult;
+import battleships.enums.attackResult;
+import battleships.models.Board;
 
 public class AiEasy implements AiBot {
     @Override
@@ -10,8 +10,7 @@ public class AiEasy implements AiBot {
         int row = (int) (Math.random() * 10);
         int column = (int) (Math.random() * 10);
 
-        while (playerBoard.receiveAttack(row, column) == attackResult.ALREADY_SHOT
-                || playerBoard.receiveAttack(row, column) == attackResult.SUNK) {
+        while (playerBoard.receiveAttack(row, column) == attackResult.ALREADY_SHOT) {
             row = (int) (Math.random() * 10);
             column = (int) (Math.random() * 10);
         }

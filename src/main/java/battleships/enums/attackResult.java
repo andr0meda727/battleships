@@ -1,4 +1,4 @@
-package battleships.models.Board;
+package battleships.enums;
 
 public enum attackResult {
     MISS,
