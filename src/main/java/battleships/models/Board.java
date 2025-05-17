@@ -10,8 +10,15 @@ public class Board {
         HORIZONTAL
     }
 
+    public enum AttackResult {
+        MISS,
+        HIT,
+        SUNK,
+        ALREADY_SHOT
+    }
+
     private static final int BOARD_SIZE = 10;
-    private Cell[][] board;
+    public Cell[][] board;
     final List<Integer> shipLengths = new ArrayList<>(Arrays.asList(2, 3, 3, 4, 5));
 
     public Board() {
@@ -27,12 +34,12 @@ public class Board {
     private void placeShips() {
         for (int length : shipLengths) {
             boolean placed = false;
-            while(!placed) {
+            while (!placed) {
                 int row = (int) (Math.random() * BOARD_SIZE);
                 int col = (int) (Math.random() * BOARD_SIZE);
                 Direction direction = ((int) ((Math.random() * 10) % 2)) == 0 ? Direction.VERTICAL : Direction.HORIZONTAL;
 
-                if(canPlaceShip(row, col, length, direction)) {
+                if (canPlaceShip(row, col, length, direction)) {
                     Ship ship = new Ship(length);
                     placeShipOnBoard(ship, row, col, length, direction);
                     placed = true;
@@ -49,24 +56,17 @@ public class Board {
                 if (i < 0 || i >= BOARD_SIZE) continue;
                 for (int j = col - 1; j <= col + length; j++) {
                     if (j < 0 || j >= BOARD_SIZE) continue;
-                    if (board[i][j].hasShip()) {
-                        System.out.println("The ship is already here");
-                        return false;
-                    }
+                    if (board[i][j].hasShip()) return false;
                 }
             }
-        }
-        else {
+        } else {
             if (row + length > BOARD_SIZE) return false;
 
             for (int i = row - 1; i <= row + length; i++) {
                 if (i < 0 || i >= BOARD_SIZE) continue;
                 for (int j = col - 1; j <= col + 1; j++) {
                     if (j < 0 || j >= BOARD_SIZE) continue;
-                    if (board[i][j].hasShip()) {
-                        System.out.println("The ship is already here");
-                        return false;
-                    }
+                    if (board[i][j].hasShip()) return false;
                 }
             }
         }
@@ -78,8 +78,7 @@ public class Board {
             for (int i = 0; i < length; i++) {
                 board[row][col + i].setShip(ship);
             }
-        }
-        else {
+        } else {
             for (int i = 0; i < length; i++) {
                 board[row + i][col].setShip(ship);
             }
@@ -93,5 +92,27 @@ public class Board {
             }
         }
         placeShips();
+    }
+
+    private AttackResult receiveAttack(int row, int col) {
+        Cell cell = board[row][col];
+
+        if (cell.wasShot()) {
+            return AttackResult.ALREADY_SHOT;
+        }
+
+        cell.shoot();
+
+        if (cell.hasShip()) {
+            Ship ship = cell.getShip();
+            ship.hit();
+
+            if (ship.isSunk()) {
+                return AttackResult.SUNK;
+            }
+            return AttackResult.HIT;
+        }
+
+        return AttackResult.MISS;
     }
 }
