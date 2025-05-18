@@ -1,17 +1,19 @@
 package battleships.controllers;
 
 import battleships.models.Board;
-import battleships.models.Cell;
+import battleships.models.GameState;
+import battleships.utils.UIUtils;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.IOException;
+
 public class MainMenuController {
-
-
 
     private static final int SIZE = 10;
     private static final int CELL_SIZE = 40;
@@ -23,39 +25,27 @@ public class MainMenuController {
     @FXML private VBox placementBox;
 
     @FXML
-    public void initialize() {
+    public void initialize() throws IOException {
         createGrid(playerGrid, "GRACZ");
         createGrid(enemyGrid, "PRZECIWNIK");
 
-        Board playerBoard = new Board();
-        Board enemyBoard = new Board();
+        //Load manually placement view and access it
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/battleships/views/placement-view.fxml"));
+        Node placementNode = loader.load();
+        placementBox.getChildren().add(placementNode);
 
-        int[][] coordinates = {
-                {0, 0, 1, 0, 0, 0, 0, 0, 1, 0},
-                {0, 0, 1, 0, 0, 0, 1, 0, 1, 0},
-                {0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
-                {0, 0, 0, 0, 1, 1, 1, 0, 0, 0},
-                {1, 1, 1, 1, 0, 0, 0, 1, 1, 1},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {1, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-                {0, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-                {0, 0, 0, 1, 1, 1, 1, 1, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-        };
-        colorGrid(playerGrid,playerBoard.board);
-        colorGrid(enemyGrid,enemyBoard.board);
+        //link playerGrid to button controller so it can change it
+        PlacementController placementController = loader.getController();
+        placementController.setPlayerGrid(playerGrid);
+
+
+        Board playerBoard = GameState.getPlayer().getBoard();
+        Board enemyBoard = GameState.getEnemy().getBoard();
+
+        UIUtils.colorGrid(playerGrid, playerBoard.board);
+        UIUtils.colorGrid(enemyGrid, enemyBoard.board);
     }
 
-    private void colorGrid(GridPane grid, Cell[][] board){
-        for (Node node : grid.getChildren()) {
-            if (node instanceof Rectangle rect) {
-                int col = GridPane.getColumnIndex(rect);
-                int row = GridPane.getRowIndex(rect);
-                if (board[row][col].hasShip())
-                    rect.setFill(Color.HOTPINK);
-            }
-        }
-    }
     private void createGrid(GridPane grid, String label) {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
