@@ -26,6 +26,10 @@ public class Board {
         placeShips();
     }
 
+    public int getBoardSize() {
+        return BOARD_SIZE;
+    }
+
     private void placeShips() {
         for (int length : shipLengths) {
             boolean placed = false;
