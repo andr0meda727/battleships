@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class MainMenuController {
 
@@ -26,8 +27,8 @@ public class MainMenuController {
 
     @FXML
     public void initialize() throws IOException {
-        createGrid(playerGrid, "GRACZ");
-        createGrid(enemyGrid, "PRZECIWNIK");
+        createGrid(playerGrid, "PLAYER");
+        createGrid(enemyGrid, "ENEMY");
 
         //Load manually placement view and access it
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/battleships/views/placement-view.fxml"));
@@ -38,12 +39,11 @@ public class MainMenuController {
         PlacementController placementController = loader.getController();
         placementController.setPlayerGrid(playerGrid);
 
-
         Board playerBoard = GameState.getPlayer().getBoard();
         Board enemyBoard = GameState.getEnemy().getBoard();
 
+        //color only player setup, we don't see enemy
         UIUtils.colorGrid(playerGrid, playerBoard.board);
-        UIUtils.colorGrid(enemyGrid, enemyBoard.board);
     }
 
     private void createGrid(GridPane grid, String label) {
@@ -52,14 +52,20 @@ public class MainMenuController {
                 Rectangle cell = new Rectangle(CELL_SIZE, CELL_SIZE);
                 cell.setFill(Color.LIGHTGRAY);
                 cell.setStroke(Color.BLACK);
-
-                final int finalRow = row;
-                final int finalCol = col;
-                cell.setOnMouseClicked(e -> {
-                    System.out.println("Klik w " + label + " (" + finalRow + ", " + finalCol + ")");
-                    cell.setFill(Color.HOTPINK);
-                });
-
+                if(Objects.equals(label, "ENEMY")) {
+                    //needed to pass to color function
+                    int finalRow = row;
+                    int finalCol = col;
+                    cell.setOnMouseClicked(e -> {
+                        if(GameState.isYourTurn()) {
+                            UIUtils.colorAttack(cell, finalRow, finalCol);
+                            GameState.changeTurn();
+                        }
+                        else {
+                            System.out.println("Not your turn!");
+                        }
+                    });
+                }
                 grid.add(cell, col, row);
             }
         }
