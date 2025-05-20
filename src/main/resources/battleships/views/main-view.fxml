@@ -11,7 +11,7 @@
     <VBox spacing="10" alignment="CENTER">
         <fx:include fx:id="difficultyBox" source="difficulty-view.fxml" />
         <VBox fx:id="placementBox" spacing="10" alignment="CENTER"/>
-        <Button text="Start" prefWidth="150"/>
+        <Button fx:id="startButton" text="Start" prefWidth="150"/>
     </VBox>
 
     <fx:include fx:id="enemyGrid" source="grid-view.fxml"/>
