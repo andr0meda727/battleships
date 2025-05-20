@@ -105,6 +105,9 @@ public class Board {
 
             if (ship.isSunk()) {
                 shipsSunk++;
+                if (isGameOver()){
+                    GameState.endGame();
+                }
                 return attackResult.SUNK;
             }
             return attackResult.HIT;
