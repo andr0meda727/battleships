@@ -4,6 +4,7 @@ import battleships.enums.Mode;
 import battleships.enums.Orientation;
 import battleships.enums.attackResult;
 import battleships.interfaces.AiBot;
+import battleships.models.AttackOutcome;
 import battleships.models.Board;
 
 import java.util.*;
@@ -15,32 +16,34 @@ public class AiMedium implements AiBot {
     Set<Integer> impossibleCoordinates = new HashSet<>(); // Exclude adjacent coordinates after the ship was sunk
     Mode mode;
     Orientation orientation;
+    private final Board board;
 
-    private AiMedium() {
+    public AiMedium() {
         this.mode = Mode.HUNT;
         this.orientation = Orientation.UNKNOWN;
+        this.board = new Board();
     }
 
     @Override
-    public void makeMove(Board playerBoard) {
-        switch (mode) {
-            case HUNT:
-                attackHuntMode(playerBoard);
-                break;
-            case TARGET:
-                attackTargetMode(playerBoard);
-                break;
-            default:
-                System.out.println("Mode unknown");
-        }
+    public Board getBoard() {
+        return this.board;
     }
 
-    private void attackHuntMode(Board playerBoard) {
-        attackRandomValidCoordinates(playerBoard);
+    @Override
+    public AttackOutcome makeMove(Board playerBoard) {
+        return switch (mode) {
+            case HUNT -> attackHuntMode(playerBoard);
+            case TARGET -> attackTargetMode(playerBoard);
+            default -> null;
+        };
     }
 
-    private void attackTargetMode(Board playerBoard) {
-        attackPotentialCoordinates(playerBoard);
+    private AttackOutcome attackHuntMode(Board playerBoard) {
+        return attackRandomValidCoordinates(playerBoard);
+    }
+
+    private AttackOutcome attackTargetMode(Board playerBoard) {
+        return attackPotentialCoordinates(playerBoard);
     }
 
     private void addCoordinatesToImpossibleCoordinatesList() {
@@ -102,7 +105,7 @@ public class AiMedium implements AiBot {
         }
     }
 
-    private void attackPotentialCoordinates(Board playerBoard) {
+    private AttackOutcome attackPotentialCoordinates(Board playerBoard) {
         List<Integer> coordinates = new ArrayList<>();
         attackResult shootingResult;
 
@@ -137,6 +140,8 @@ public class AiMedium implements AiBot {
             currentHits.clear();
             potentialTargets.clear();
         }
+
+        return new AttackOutcome(row, column, shootingResult);
     }
 
     private void updatePotentialTargets() {
@@ -230,7 +235,7 @@ public class AiMedium implements AiBot {
                 .collect(Collectors.toList());
     }
 
-    private void attackRandomValidCoordinates(Board playerBoard) {
+    private AttackOutcome attackRandomValidCoordinates(Board playerBoard) {
         List<Integer> coordinates = new ArrayList<>();
         attackResult shootingResult;
 
@@ -264,5 +269,7 @@ public class AiMedium implements AiBot {
             currentHits.clear();
             potentialTargets.clear();
         }
+
+        return new AttackOutcome(row, column, shootingResult);
     }
 }
