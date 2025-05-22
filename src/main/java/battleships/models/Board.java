@@ -13,9 +13,13 @@ public class Board {
     }
 
     private static final int BOARD_SIZE = 10;
-    public Cell[][] board;
     final List<Integer> shipLengths = new ArrayList<>(Arrays.asList(2, 3, 3, 4, 5));
+    private int shipsSunk;
+    public Cell[][] board;
 
+    public void resetSunk(){
+        shipsSunk = 0;
+    }
     public Board() {
         board = new Cell[BOARD_SIZE][BOARD_SIZE];
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -107,11 +111,41 @@ public class Board {
             ship.hit();
 
             if (ship.isSunk()) {
+                shipsSunk++;
+                if (isGameOver()){
+                    GameState.endGame();
+                }
                 return attackResult.SUNK;
             }
             return attackResult.HIT;
         }
 
         return attackResult.MISS;
+    }
+
+    public boolean isGameOver() {
+        return shipsSunk == shipLengths.size();
+    }
+
+    public List<Integer> getRemainingShipsLengths() {
+        List<Integer> remainingShips = new ArrayList<>();
+        List<Ship> processedShips = new ArrayList<>();
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int column = 0; column < BOARD_SIZE; column++) {
+                Cell cell = board[row][column];
+
+                if (cell.hasShip()) {
+                    Ship ship = cell.getShip();
+
+                    if (!processedShips.contains(ship) && !ship.isSunk()) {
+                        remainingShips.add(ship.getLength());
+                        processedShips.add(ship);
+                    }
+                }
+            }
+        }
+
+        return remainingShips;
     }
 }

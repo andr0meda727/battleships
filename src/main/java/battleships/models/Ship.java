@@ -15,6 +15,10 @@ public class Ship {
         }
     }
 
+    public int getLength() {
+        return length;
+    }
+
     public boolean isSunk() {
         return hitCount == length;
     }
