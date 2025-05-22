@@ -4,8 +4,8 @@
 <?import javafx.scene.layout.*?>
 
 
-<VBox fx:controller="battleships.controllers.PlacementController"
+<VBox fx:controller="battleships.controllers.ButtonController"
       xmlns:fx="http://javafx.com/fxml" spacing="10" alignment="CENTER">
     <Button fx:id="placeButton" text="Rozmieść statki" prefWidth="150"/>
-    <Button fx:id="resetButton" text="Resetuj układ" prefWidth="150"/>
+    <Button fx:id="resetButton" text="Resetuj gre" prefWidth="150"/>
 </VBox>

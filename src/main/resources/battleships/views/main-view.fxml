@@ -4,15 +4,15 @@
 
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
+
 <HBox xmlns:fx="http://javafx.com/fxml" fx:controller="battleships.controllers.MainMenuController" spacing="40" alignment="CENTER">
     <fx:include fx:id="playerGrid" source="grid-view.fxml"/>
 
     <VBox spacing="10" alignment="CENTER">
         <fx:include fx:id="difficultyBox" source="difficulty-view.fxml" />
-        <fx:include fx:id="placementBox" source="placement-view.fxml" />
-        <Button text="Start" prefWidth="150"/>
+        <VBox fx:id="placementBox" spacing="10" alignment="CENTER"/>
+        <Button fx:id="startButton" text="Start" prefWidth="150"/>
     </VBox>
 
     <fx:include fx:id="enemyGrid" source="grid-view.fxml"/>
 </HBox>
-
