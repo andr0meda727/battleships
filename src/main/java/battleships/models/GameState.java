@@ -3,6 +3,7 @@ package battleships.models;
 import battleships.enums.Difficulty;
 import battleships.interfaces.AiBot;
 import battleships.models.bots.AiEasy;
+import battleships.models.bots.AiHard;
 import battleships.models.bots.AiMedium;
 
 public class GameState {
@@ -32,6 +33,7 @@ public class GameState {
         chosenDifficulty = null;
         gameEnded = false;
         resetEnemyBoard();
+
         resetPlayerBoard();
     }
     public static void changeGameStart() {
@@ -39,10 +41,14 @@ public class GameState {
             System.out.println("Pick difficulty first!");
         }else{
             gameStarted = !gameStarted;
-            if(chosenDifficulty == Difficulty.EASY)
+            if(chosenDifficulty == Difficulty.EASY) {
                 enemy = new AiEasy();
-            else if(chosenDifficulty == Difficulty.MEDIUM)
+            }
+            else if(chosenDifficulty == Difficulty.MEDIUM) {
                 enemy = new AiMedium();
+            } else if (chosenDifficulty == Difficulty.HARD) {
+                enemy = new AiHard();
+            }
         }
     }
 
@@ -68,8 +74,10 @@ public class GameState {
 
     public static void resetPlayerBoard() {
         player.getBoard().resetBoard();
+        player.getBoard().resetSunk();
     }
     public static void resetEnemyBoard() {
         enemy.getBoard().resetBoard();
+        enemy.getBoard().resetSunk();
     }
 }

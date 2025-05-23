@@ -17,6 +17,9 @@ public class Board {
     private int shipsSunk;
     public Cell[][] board;
 
+    public void resetSunk(){
+        shipsSunk = 0;
+    }
     public Board() {
         board = new Cell[BOARD_SIZE][BOARD_SIZE];
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -25,6 +28,10 @@ public class Board {
             }
         }
         placeShips();
+    }
+
+    public int getBoardSize() {
+        return BOARD_SIZE;
     }
 
     private void placeShips() {
@@ -118,5 +125,27 @@ public class Board {
 
     public boolean isGameOver() {
         return shipsSunk == shipLengths.size();
+    }
+
+    public List<Integer> getRemainingShipsLengths() {
+        List<Integer> remainingShips = new ArrayList<>();
+        List<Ship> processedShips = new ArrayList<>();
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int column = 0; column < BOARD_SIZE; column++) {
+                Cell cell = board[row][column];
+
+                if (cell.hasShip()) {
+                    Ship ship = cell.getShip();
+
+                    if (!processedShips.contains(ship) && !ship.isSunk()) {
+                        remainingShips.add(ship.getLength());
+                        processedShips.add(ship);
+                    }
+                }
+            }
+        }
+
+        return remainingShips;
     }
 }
