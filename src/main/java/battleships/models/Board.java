@@ -1,5 +1,6 @@
 package battleships.models;
 
+import battleships.enums.Orientation;
 import battleships.enums.attackResult;
 
 import java.util.ArrayList;
@@ -7,11 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Board {
-    private enum Direction {
-        VERTICAL,
-        HORIZONTAL
-    }
-
     private static final int BOARD_SIZE = 10;
     final List<Integer> shipLengths = new ArrayList<>(Arrays.asList(2, 3, 3, 4, 5));
     private int shipsSunk;
@@ -40,19 +36,19 @@ public class Board {
             while (!placed) {
                 int row = (int) (Math.random() * BOARD_SIZE);
                 int col = (int) (Math.random() * BOARD_SIZE);
-                Direction direction = ((int) ((Math.random() * 10) % 2)) == 0 ? Direction.VERTICAL : Direction.HORIZONTAL;
+                Orientation orientation = ((int) ((Math.random() * 10) % 2)) == 0 ? Orientation.VERTICAL : Orientation.HORIZONTAL;
 
-                if (canPlaceShip(row, col, length, direction)) {
+                if (canPlaceShip(row, col, length, orientation)) {
                     Ship ship = new Ship(length);
-                    placeShipOnBoard(ship, row, col, length, direction);
+                    placeShipOnBoard(ship, row, col, length, orientation);
                     placed = true;
                 }
             }
         }
     }
 
-    private boolean canPlaceShip(int row, int col, int length, Direction direction) {
-        if (direction == Direction.HORIZONTAL) {
+    private boolean canPlaceShip(int row, int col, int length, Orientation orientation) {
+        if (orientation == Orientation.HORIZONTAL) {
             if (col + length > BOARD_SIZE) return false;
 
             for (int i = row - 1; i <= row + 1; i++) {
@@ -76,8 +72,8 @@ public class Board {
         return true;
     }
 
-    private void placeShipOnBoard(Ship ship, int row, int col, int length, Direction direction) {
-        if (direction == Direction.HORIZONTAL) {
+    private void placeShipOnBoard(Ship ship, int row, int col, int length, Orientation orientation) {
+        if (orientation == Orientation.HORIZONTAL) {
             for (int i = 0; i < length; i++) {
                 board[row][col + i].setShip(ship);
             }
