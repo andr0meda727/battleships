@@ -1,18 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.HBox?>
-
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.geometry.Insets?>
 
-<HBox xmlns:fx="http://javafx.com/fxml" fx:controller="battleships.controllers.MainMenuController" spacing="40" alignment="CENTER">
-    <fx:include fx:id="playerGrid" source="grid-view.fxml"/>
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="battleships.controllers.MainMenuController"
+      spacing="40"
+      alignment="CENTER"
+      style="-fx-padding: 20;">
 
+    <!-- Lewa strona: Plansza gracza -->
     <VBox spacing="10" alignment="CENTER">
-        <fx:include fx:id="difficultyBox" source="difficulty-view.fxml" />
-        <VBox fx:id="placementBox" spacing="10" alignment="CENTER"/>
-        <Button fx:id="startButton" text="Start" prefWidth="150"/>
+        <Label text="Twoja plansza" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+        <fx:include fx:id="playerGrid" source="grid-view.fxml"/>
     </VBox>
 
-    <fx:include fx:id="enemyGrid" source="grid-view.fxml"/>
+    <!-- Środek: Panel sterowania -->
+    <VBox spacing="15" alignment="CENTER" style="-fx-padding: 10; -fx-min-width: 200;">
+
+        <!-- Wybór trudności -->
+        <fx:include fx:id="difficultyBox" source="difficulty-view.fxml" />
+
+        <!-- Przyciski rozmieszczenia -->
+        <VBox fx:id="placementBox" spacing="10" alignment="CENTER"/>
+
+        <!-- Przycisk start -->
+        <Button fx:id="startButton" text="START GRY" prefWidth="180"
+                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10;"/>
+
+        <!-- Separator -->
+        <Separator prefWidth="180"/>
+
+        <!-- Panel statystyk i opcji -->
+        <VBox fx:id="statsBox" spacing="8" alignment="CENTER_LEFT"
+              style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-color: #f9f9f9;">
+        </VBox>
+    </VBox>
+
+    <!-- Prawa strona: Plansza przeciwnika -->
+    <VBox spacing="10" alignment="CENTER">
+        <Label text="Plansza przeciwnika" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+        <fx:include fx:id="enemyGrid" source="grid-view.fxml"/>
+    </VBox>
 </HBox>

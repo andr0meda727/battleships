@@ -1,6 +1,6 @@
 package battleships.controllers;
 
-import battleships.models.GameState;
+import battleships.managers.GameStateManager;
 import battleships.utils.UIUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -8,44 +8,48 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
 public class ButtonController {
+    @FXML private Button placeButton;
+    @FXML private Button resetButton;
 
-    @FXML private Button  placeButton;
-    @FXML private Button  resetButton;
-
+    private GameStateManager gameManager;
     private GridPane playerGrid;
     private GridPane enemyGrid;
-    private Label chosen;
+    private Label chosenLabel;
 
-    public void setChosenLabel(Label chosen){
-        this.chosen = chosen;
+    public void initialize(GameStateManager gameManager, GridPane playerGrid,
+                           GridPane enemyGrid, Label chosenLabel) {
+        this.gameManager = gameManager;
+        this.playerGrid = playerGrid;
+        this.enemyGrid = enemyGrid;
+        this.chosenLabel = chosenLabel;
+
+        placeButton.setOnAction(event -> handlePlaceShips());
+        resetButton.setOnAction(event -> handleReset());
     }
 
-    public void setPlayerGrid(GridPane grid) {
-        this.playerGrid = grid;
+    private void handlePlaceShips() {
+        if (gameManager.isGameStarted()) {
+            System.out.println("Nie można zmieniać rozmieszczenia w trakcie gry");
+            return;
+        }
+
+        gameManager.getPlayer().reset();
+        UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
     }
-    public void setEnemyGrid(GridPane grid) {
-        this.enemyGrid = grid;
-    }
 
+    private void handleReset() {
+        if (gameManager.isGameStarted()) {
+            boolean confirmed = UIUtils.showConfirmationDialog(
+                    "Reset gry",
+                    "Czy na pewno chcesz zresetować grę?"
+            );
 
-    @FXML
-    public void initialize() {
-        placeButton.setOnAction(event -> {
-            if(!GameState.isGameStarted()) {
-                GameState.resetPlayerBoard(); //reset array
-                if (playerGrid != null) {
-                    UIUtils.colorGrid(playerGrid, GameState.getPlayer().getBoard().board); //color after reset
-                }
-            }else{
-                System.out.println("Game started, can't change!");
-            }
-        });
+            if (!confirmed) return;
+        }
 
-        resetButton.setOnAction(event -> {
-            GameState.resetGame();
-            UIUtils.colorGrid(playerGrid, GameState.getPlayer().getBoard().board); //color after reset
-            UIUtils.colorBlank(enemyGrid);
-            chosen.setText("Wybrany poziom: ");
-        });
+        gameManager.resetGame();
+        UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
+        UIUtils.colorBlank(enemyGrid);
+        chosenLabel.setText("Wybrany poziom: ");
     }
 }

@@ -1,48 +1,60 @@
 package battleships.models;
 
+import battleships.enums.AttackResult;
 import battleships.enums.Orientation;
-import battleships.enums.attackResult;
+import battleships.factories.ShipFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Board {
     private static final int BOARD_SIZE = 10;
-    final List<Integer> shipLengths = new ArrayList<>(Arrays.asList(2, 3, 3, 4, 5));
-    private int shipsSunk;
-    public Cell[][] board;
+    private final List<Integer> shipLengths = Arrays.asList(2, 3, 3, 4, 5);
 
-    public void resetSunk(){
-        shipsSunk = 0;
-    }
+    public Cell[][] board;
+    private int shipsSunk;
+    private final List<Ship> ships;
+    private final Random random;
+
     public Board() {
-        board = new Cell[BOARD_SIZE][BOARD_SIZE];
+        this.board = new Cell[BOARD_SIZE][BOARD_SIZE];
+        this.ships = new ArrayList<>();
+        this.random = new Random();
+        initializeBoard();
+        placeShips();
+    }
+
+    private void initializeBoard() {
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 board[i][j] = new Cell();
             }
         }
-        placeShips();
-    }
-
-    public int getBoardSize() {
-        return BOARD_SIZE;
     }
 
     private void placeShips() {
+        ships.clear();
+        shipsSunk = 0;
+
         for (int length : shipLengths) {
+            Ship ship = ShipFactory.createShip(length); // Factory Pattern
+            ships.add(ship);
+
             boolean placed = false;
-            while (!placed) {
-                int row = (int) (Math.random() * BOARD_SIZE);
-                int col = (int) (Math.random() * BOARD_SIZE);
-                Orientation orientation = ((int) ((Math.random() * 10) % 2)) == 0 ? Orientation.VERTICAL : Orientation.HORIZONTAL;
+            int attempts = 0;
+            while (!placed && attempts < 1000) {
+                int row = random.nextInt(BOARD_SIZE);
+                int col = random.nextInt(BOARD_SIZE);
+                Orientation orientation = random.nextBoolean() ?
+                        Orientation.HORIZONTAL : Orientation.VERTICAL;
 
                 if (canPlaceShip(row, col, length, orientation)) {
-                    Ship ship = new Ship(length);
                     placeShipOnBoard(ship, row, col, length, orientation);
                     placed = true;
                 }
+                attempts++;
             }
         }
     }
@@ -51,21 +63,21 @@ public class Board {
         if (orientation == Orientation.HORIZONTAL) {
             if (col + length > BOARD_SIZE) return false;
 
-            for (int i = row - 1; i <= row + 1; i++) {
-                if (i < 0 || i >= BOARD_SIZE) continue;
-                for (int j = col - 1; j <= col + length; j++) {
-                    if (j < 0 || j >= BOARD_SIZE) continue;
-                    if (board[i][j].hasShip()) return false;
+            for (int r = row - 1; r <= row + 1; r++) {
+                for (int c = col - 1; c <= col + length; c++) {
+                    if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                        if (board[r][c].hasShip()) return false;
+                    }
                 }
             }
         } else {
             if (row + length > BOARD_SIZE) return false;
 
-            for (int i = row - 1; i <= row + length; i++) {
-                if (i < 0 || i >= BOARD_SIZE) continue;
-                for (int j = col - 1; j <= col + 1; j++) {
-                    if (j < 0 || j >= BOARD_SIZE) continue;
-                    if (board[i][j].hasShip()) return false;
+            for (int r = row - 1; r <= row + length; r++) {
+                for (int c = col - 1; c <= col + 1; c++) {
+                    if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                        if (board[r][c].hasShip()) return false;
+                    }
                 }
             }
         }
@@ -84,39 +96,27 @@ public class Board {
         }
     }
 
-    public void resetBoard() {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                board[i][j] = new Cell();
-            }
-        }
-        placeShips();
-    }
-
-    public attackResult receiveAttack(int row, int col) {
+    public AttackResult receiveAttack(int row, int col) {
         Cell cell = board[row][col];
 
         if (cell.wasShot()) {
-            return attackResult.ALREADY_SHOT;
+            return AttackResult.ALREADY_SHOT;
         }
 
         cell.shoot();
 
         if (cell.hasShip()) {
             Ship ship = cell.getShip();
-            ship.hit();
+            ship.hit(); // State Pattern - zmienia stan
 
             if (ship.isSunk()) {
                 shipsSunk++;
-                if (isGameOver()){
-                    GameState.endGame();
-                }
-                return attackResult.SUNK;
+                return AttackResult.SUNK;
             }
-            return attackResult.HIT;
+            return AttackResult.HIT;
         }
 
-        return attackResult.MISS;
+        return AttackResult.MISS;
     }
 
     public boolean isGameOver() {
@@ -124,24 +124,20 @@ public class Board {
     }
 
     public List<Integer> getRemainingShipsLengths() {
-        List<Integer> remainingShips = new ArrayList<>();
-        List<Ship> processedShips = new ArrayList<>();
-
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int column = 0; column < BOARD_SIZE; column++) {
-                Cell cell = board[row][column];
-
-                if (cell.hasShip()) {
-                    Ship ship = cell.getShip();
-
-                    if (!processedShips.contains(ship) && !ship.isSunk()) {
-                        remainingShips.add(ship.getLength());
-                        processedShips.add(ship);
-                    }
-                }
+        List<Integer> remaining = new ArrayList<>();
+        for (Ship ship : ships) {
+            if (!ship.isSunk()) {
+                remaining.add(ship.getLength());
             }
         }
-
-        return remainingShips;
+        return remaining;
     }
+
+    public void resetBoard() {
+        initializeBoard();
+        placeShips();
+    }
+
+    public int getBoardSize() { return BOARD_SIZE; }
+    public List<Ship> getShips() { return new ArrayList<>(ships); }
 }

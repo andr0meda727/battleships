@@ -1,40 +1,48 @@
 package battleships.controllers;
 
 import battleships.enums.Difficulty;
-import battleships.models.GameState;
+import battleships.managers.GameStateManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 
-import java.util.Objects;
-
 public class DifficultyController {
+    @FXML private ListView<String> difficulty;
+    @FXML private Label chosen;
 
-    @FXML
-    private ListView<String> difficulty;
-    @FXML
-    private Label chosen;
+    private GameStateManager gameManager;
+
     public Label getChosenLabel() {
         return chosen;
     }
-    private static final String[] choices = {"easy", "medium", "hard"};
-    private Difficulty currentDifficulty;
 
     @FXML
     public void initialize() {
-        difficulty.getItems().addAll(choices);
+        difficulty.getItems().addAll("easy", "medium", "hard");
+    }
+
+    public void setGameManager(GameStateManager gameManager) {
+        this.gameManager = gameManager;
+
         difficulty.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> {
-                    if (!GameState.isGameStarted()) {
-                        if (Objects.equals(newVal, "easy"))
-                            currentDifficulty = Difficulty.EASY;
-                        else if (Objects.equals(newVal, "medium"))
-                            currentDifficulty = Difficulty.MEDIUM;
-                        else if (Objects.equals(newVal, "hard"))
-                            currentDifficulty = Difficulty.HARD;
+                    if (newVal == null) return;
 
+                    if (gameManager != null && gameManager.isGameStarted()) {
+                        System.out.println("Nie można zmienić trudności w trakcie gry");
+                        return;
+                    }
+
+                    Difficulty selected = switch (newVal.toLowerCase()) {
+                        case "easy" -> Difficulty.EASY;
+                        case "medium" -> Difficulty.MEDIUM;
+                        case "hard" -> Difficulty.HARD;
+                        default -> null;
+                    };
+
+                    if (selected != null && gameManager != null) {
+                        gameManager.setChosenDifficulty(selected);
                         chosen.setText("Wybrany poziom: " + newVal);
-                        GameState.setChosenDifficulty(currentDifficulty);
                     }
                 }
         );

@@ -1,104 +1,227 @@
 package battleships.controllers;
 
+import battleships.builders.GameSetup;
+import battleships.builders.GameSetupBuilder;
+import battleships.commands.AttackCommand;
+import battleships.enums.AttackResult;
+import battleships.managers.GameStateManager;
 import battleships.models.AttackOutcome;
 import battleships.models.Board;
-import battleships.models.GameState;
+import battleships.models.Coordinate;
+import battleships.observers.StatisticsObserver;
+import battleships.utils.HeatmapVisualizer;
 import battleships.utils.UIUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class MainMenuController {
-
     private static final int SIZE = 10;
     private static final int CELL_SIZE = 40;
 
     @FXML private GridPane playerGrid;
     @FXML private GridPane enemyGrid;
-
     @FXML private VBox difficultyBox;
     @FXML private VBox placementBox;
-
+    @FXML private VBox statsBox;
     @FXML private DifficultyController difficultyBoxController;
-
     @FXML private Button startButton;
+    @FXML private CheckBox showHeatmapCheckbox;
+    @FXML private Label statsLabel;
+
+    private GameStateManager gameManager;
+    private HeatmapVisualizer heatmapVisualizer;
+    private StatisticsObserver statisticsObserver;
 
     @FXML
     public void initialize() throws IOException {
-        createGrid(playerGrid, "PLAYER");
-        createGrid(enemyGrid, "ENEMY");
+        // Builder Pattern - tworzenie setup'u
+        GameSetup setup = new GameSetupBuilder()
+                .withStatistics(true)
+                .build();
 
-        //Load manually placement view and access it
+        this.gameManager = new GameStateManager();
+        this.heatmapVisualizer = new HeatmapVisualizer();
+
+        // Observer Pattern - dodaj obserwatorów
+        setup.getObservers().forEach(gameManager::addObserver);
+        this.statisticsObserver = gameManager.getObservers().stream()
+                .filter(o -> o instanceof StatisticsObserver)
+                .map(o -> (StatisticsObserver) o)
+                .findFirst()
+                .orElse(new StatisticsObserver());
+
+        // WAŻNE: Przekaż GameStateManager do DifficultyController
+        difficultyBoxController.setGameManager(gameManager);
+
+        createGrid(playerGrid, GridType.PLAYER);
+        createGrid(enemyGrid, GridType.ENEMY);
+
+        setupPlacementControls();
+        setupStartButton();
+        setupHeatmapToggle();
+        setupStatsDisplay();
+
+        updateUI();
+    }
+
+    private void setupPlacementControls() throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/battleships/views/placement-view.fxml"));
         Node placementNode = loader.load();
         placementBox.getChildren().add(placementNode);
 
-        //link playerGrid to button controller so it can change it
         ButtonController buttonController = loader.getController();
-        buttonController.setPlayerGrid(playerGrid);
-        buttonController.setEnemyGrid(enemyGrid);
-        buttonController.setChosenLabel( difficultyBoxController.getChosenLabel() );
+        buttonController.initialize(gameManager, playerGrid, enemyGrid,
+                difficultyBoxController.getChosenLabel());
+    }
 
-
-        Board playerBoard = GameState.getPlayer().getBoard();
-        //Board enemyBoard = GameState.getEnemy().getBoard();
-
-        //color only player setup, we don't see enemy
-        UIUtils.colorGrid(playerGrid, playerBoard.board);
-
-        startButton.setOnMouseClicked(event ->{
-            if(!GameState.isGameStarted()) {
-                GameState.changeGameStart();
+    private void setupStartButton() {
+        startButton.setOnAction(event -> {
+            if (!gameManager.isGameStarted()) {
+                try {
+                    gameManager.startGame(gameManager.getChosenDifficulty());
+                    startButton.setText("Gra w toku...");
+                    startButton.setDisable(true);
+                    updateHeatmapVisibility();
+                } catch (IllegalStateException e) {
+                    UIUtils.showConfirmationDialog("Błąd", e.getMessage());
+                }
             }
         });
     }
-    private void handleEnemyShot(){
-        AttackOutcome outcome = GameState.getEnemy().makeMove(GameState.getPlayer().getBoard());
-        UIUtils.colorEnemyAttack(playerGrid,outcome);
-        GameState.changeTurn();
+
+    private void setupHeatmapToggle() {
+        if (showHeatmapCheckbox == null) {
+            showHeatmapCheckbox = new CheckBox("Pokaż heatmapę AI (Hard)");
+        }
+        showHeatmapCheckbox.setSelected(false);
+        showHeatmapCheckbox.setOnAction(event -> updateHeatmapVisibility());
+
+        if (statsBox != null && !statsBox.getChildren().contains(showHeatmapCheckbox)) {
+            statsBox.getChildren().add(showHeatmapCheckbox);
+        }
     }
-    private void createGrid(GridPane grid, String label) {
+
+    private void setupStatsDisplay() {
+        statsLabel = new Label("Statystyki:\n-");
+        if (statsBox != null) {
+            statsBox.getChildren().add(statsLabel);
+        }
+    }
+
+    private void updateHeatmapVisibility() {
+        if (showHeatmapCheckbox.isSelected() && gameManager.isGameStarted()) {
+            heatmapVisualizer.updateHeatmap(playerGrid, gameManager);
+        } else {
+            heatmapVisualizer.clearHeatmap(playerGrid);
+            UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
+        }
+    }
+
+    private void updateStats() {
+        if (statisticsObserver != null) {
+            statsLabel.setText(String.format(
+                    "Statystyki:\n" +
+                            "Gracz: %.1f%% celności\n" +
+                            "AI: %.1f%% celności",
+                    statisticsObserver.getPlayerAccuracy(),
+                    statisticsObserver.getAiAccuracy()
+            ));
+        }
+    }
+
+    private void createGrid(GridPane grid, GridType type) {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 Rectangle cell = new Rectangle(CELL_SIZE, CELL_SIZE);
                 cell.setFill(Color.LIGHTGRAY);
                 cell.setStroke(Color.BLACK);
-                if(Objects.equals(label, "ENEMY")) {
-                    //needed to pass to color function
+
+                if (type == GridType.ENEMY) {
                     int finalRow = row;
                     int finalCol = col;
-                    cell.setOnMouseClicked(event -> {
-                        if(GameState.isGameStarted() && !GameState.isGameEnded()) {
-                            if (GameState.isYourTurn()) {
-                                if(UIUtils.colorYourAttack(cell, finalRow, finalCol)){
-                                    if (GameState.isGameEnded()){
-                                        UIUtils.showEndGamePopup("Gratulacje!");
-                                    }else{
-                                        GameState.changeTurn();
-                                        handleEnemyShot();
-                                        if (GameState.isGameEnded())
-                                            UIUtils.showEndGamePopup("Niestety przegrałeś!");
-                                    }
-
-                                }
-                            } else {
-                                System.out.println("Not your turn!");
-                            }
-                        }else{
-                            System.out.println("Start the game first!");
-                        }
-                    });
+                    cell.setOnMouseClicked(event ->
+                            handlePlayerAttack(cell, new Coordinate(finalRow, finalCol)));
                 }
+
                 grid.add(cell, col, row);
             }
         }
+    }
+
+    private void handlePlayerAttack(Rectangle cell, Coordinate target) {
+        // Command Pattern - enkapsulacja ataku
+        AttackCommand command = new AttackCommand(gameManager, target);
+
+        if (command.execute()) {
+            AttackOutcome outcome = command.getOutcome();
+            UIUtils.colorPlayerAttack(cell, outcome.result());
+
+            updateStats();
+
+            if (gameManager.getAiPlayer().getBoard().isGameOver()) {
+                gameManager.endGame(true);
+                showEndGameDialog(true);
+            } else {
+                gameManager.switchTurn();
+                executeAiTurn();
+            }
+        }
+    }
+
+    private void executeAiTurn() {
+        // Małe opóźnienie dla realizmu
+        new Thread(() -> {
+            try {
+                Thread.sleep(battleships.config.GameConfig.getInstance().getAiThinkingDelay());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            javafx.application.Platform.runLater(() -> {
+                AttackOutcome outcome = gameManager.getAiPlayer()
+                        .makeMove(gameManager.getPlayer().getBoard());
+
+                gameManager.notifyAiAttack(outcome);
+                UIUtils.colorAiAttack(playerGrid, outcome);
+
+                if (showHeatmapCheckbox.isSelected()) {
+                    heatmapVisualizer.updateHeatmap(playerGrid, gameManager);
+                }
+
+                updateStats();
+
+                if (gameManager.getPlayer().getBoard().isGameOver()) {
+                    gameManager.endGame(false);
+                    showEndGameDialog(false);
+                } else {
+                    gameManager.switchTurn();
+                }
+            });
+        }).start();
+    }
+
+    private void showEndGameDialog(boolean playerWon) {
+        String message = playerWon ? "Gratulacje! Wygrałeś!" : "Niestety przegrałeś!";
+        String fullMessage = message + "\n\n" + statisticsObserver.getReport();
+        UIUtils.showEndGamePopup(fullMessage, gameManager);
+    }
+
+    private void updateUI() {
+        Board playerBoard = gameManager.getPlayer().getBoard();
+        UIUtils.colorGrid(playerGrid, playerBoard.board);
+    }
+
+    private enum GridType {
+        PLAYER, ENEMY
     }
 }
