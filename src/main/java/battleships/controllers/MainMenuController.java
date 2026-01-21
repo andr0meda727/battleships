@@ -18,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -154,29 +155,43 @@ public class MainMenuController {
     private void createGrid(GridPane grid, GridType type) {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
-                Rectangle cell = new Rectangle(CELL_SIZE, CELL_SIZE);
-                cell.setFill(Color.LIGHTGRAY);
-                cell.setStroke(Color.BLACK);
+                // Tworzymy kontener dla komórki
+                StackPane cellPane = new StackPane();
+
+                // Prostokąt (tło)
+                Rectangle rect = new Rectangle(CELL_SIZE, CELL_SIZE);
+                rect.setFill(Color.web("#2c3e50"));
+                rect.setStroke(Color.web("#16213e"));
+                rect.setStrokeWidth(0.5);
+
+                // Label dla znaku X
+                Label mark = new Label("");
+                mark.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+                mark.setMouseTransparent(true); // Kliknięcia przechodzą do StackPane
+
+                cellPane.getChildren().addAll(rect, mark);
 
                 if (type == GridType.ENEMY) {
                     int finalRow = row;
                     int finalCol = col;
-                    cell.setOnMouseClicked(event ->
-                            handlePlayerAttack(cell, new Coordinate(finalRow, finalCol)));
+                    // Teraz przypisujemy kliknięcie do StackPane
+                    cellPane.setOnMouseClicked(event ->
+                            handlePlayerAttack(cellPane, new Coordinate(finalRow, finalCol)));
                 }
 
-                grid.add(cell, col, row);
+                grid.add(cellPane, col, row);
             }
         }
     }
 
-    private void handlePlayerAttack(Rectangle cell, Coordinate target) {
-        // Command Pattern - enkapsulacja ataku
+    // Zaktualizuj też sygnaturę metody handlePlayerAttack
+    private void handlePlayerAttack(StackPane cellPane, Coordinate target) {
         AttackCommand command = new AttackCommand(gameManager, target);
 
         if (command.execute()) {
             AttackOutcome outcome = command.getOutcome();
-            UIUtils.colorPlayerAttack(cell, outcome.result());
+            // Przekazujemy StackPane zamiast Rectangle
+            UIUtils.updateAttackUI(cellPane, outcome.result());
 
             updateStats();
 

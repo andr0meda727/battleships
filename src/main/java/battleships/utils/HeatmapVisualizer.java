@@ -3,8 +3,10 @@ package battleships.utils;
 import battleships.managers.GameStateManager;
 import battleships.models.bots.BotPlayer;
 import battleships.strategies.ProbabilityAttackStrategy;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -25,50 +27,40 @@ public class HeatmapVisualizer {
         if (maxProb == 0) return;
 
         int finalMaxProb = maxProb;
+
         playerGrid.getChildren().forEach(node -> {
-            if (node instanceof Rectangle rect) {
-                Integer row = GridPane.getRowIndex(rect);
-                Integer col = GridPane.getColumnIndex(rect);
+            if (node instanceof StackPane pane) {
+                Rectangle rect = (Rectangle) pane.getChildren().get(0);
+                Label mark = (Label) pane.getChildren().get(1);
+
+                Integer row = GridPane.getRowIndex(pane);
+                Integer col = GridPane.getColumnIndex(pane);
 
                 if (row != null && col != null) {
                     int prob = probabilities[row][col];
                     boolean hasShip = gameManager.getPlayer().getBoard().board[row][col].hasShip();
 
                     if (prob == 0) {
-                        resetToBaseline(rect, hasShip);
+                        // Reset do stanu "bez heatmapy"
+                        if (mark.getText().isEmpty()) { // Tylko jeśli nie ma X/kropki
+                            rect.setFill(UIUtils.COLOR_WATER);
+                        }
                         return;
                     }
 
                     double intensity = (double) prob / finalMaxProb;
 
-                    if (isAttackable(rect)) {
-                        // 1. BAZOWY KOLOR HEATMAPY (od niebieskiego do czerwono-pomarańczowego)
-                        // Zwiększyłem lekko bazową przezroczystość (0.7), żeby kolory były żywsze
-                        Color heatColor = Color.color(1.0, 0.9 - (intensity * 0.75), 0.1, 0.7);
+                    // Sprawdzamy czy pole nie jest już trafione (brak X lub kropki)
+                    if (mark.getText().isEmpty()) {
+                        // Kolorujemy tylko tło prostokąta
+                        Color heatColor = Color.color(1.0, 0.9 - (intensity * 0.75), 0.1, 0.6);
+                        rect.setFill(heatColor);
 
+                        // Jeśli jest tam statek, upewniamy się że stroke jest zielony i gruby
                         if (hasShip) {
-                            // === JEŚLI JEST STATEK ===
-
-                            // A) Wypełnienie: Używamy koloru heatmapy, ale nakładamy na niego
-                            // BARDZO subtelny zielony filtr (opacity 0.15).
-                            // Dzięki temu "gorące" pola nadal są czerwone, ale mają leciutki zielony odcień.
-                            Color subtleGreenTint = Color.web("#00ff00", 0.15);
-                            rect.setFill(heatColor.interpolate(subtleGreenTint, 0.3));
-
-                            // B) Obramowanie: To jest główny wskaźnik. Neonowa zieleń.
-                            rect.setStroke(Color.web("#39ff14")); // Neon Green
-                            rect.setStrokeWidth(2.0); // Grubsza ramka dla statków
-
-                            // Opcjonalnie: zmiana kursora, by wskazać, że tu jest coś ważnego
-                            rect.setCursor(javafx.scene.Cursor.CROSSHAIR);
-                        } else {
-                            // === ZWYKŁE POLE ===
-                            rect.setFill(heatColor);
-                            rect.setStroke(Color.web("#16213e")); // Standardowa ciemna ramka
-                            rect.setStrokeWidth(0.5); // Cienka ramka
-                            rect.setCursor(javafx.scene.Cursor.DEFAULT);
+                            rect.setStroke(Color.web("#2ecc71"));
+                            rect.setStrokeWidth(3.0);
                         }
-                        Tooltip.install(rect, new Tooltip("Prawdopodobieństwo ataku: " + prob));
                     }
                 }
             }

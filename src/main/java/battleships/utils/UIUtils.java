@@ -8,7 +8,9 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -21,17 +23,27 @@ public class UIUtils {
 
     public static void colorGrid(GridPane grid, Cell[][] board) {
         grid.getChildren().forEach(node -> {
-            if (node instanceof Rectangle rect) {
-                Integer col = GridPane.getColumnIndex(rect);
-                Integer row = GridPane.getRowIndex(rect);
+            if (node instanceof StackPane pane) {
+                Rectangle rect = (Rectangle) pane.getChildren().get(0);
+                Label mark = (Label) pane.getChildren().get(1);
+
+                Integer col = GridPane.getColumnIndex(pane);
+                Integer row = GridPane.getRowIndex(pane);
+
                 if (row != null && col != null) {
+                    mark.setText(""); // Reset znaku X
+
+                    // ZAWSZE ustawiamy tło wody, aby statki nie miały wypełnienia
+                    rect.setFill(COLOR_WATER);
+
                     if (board[row][col].hasShip()) {
-                        // Twoje statki jako "leciutki zielony"
-                        rect.setFill(Color.web("#2ecc71", 0.7));
+                        // Tylko zielone obramowanie dla Twoich statków
                         rect.setStroke(Color.web("#2ecc71"));
+                        rect.setStrokeWidth(3.0);
                     } else {
-                        rect.setFill(Color.web("#2c3e50")); // Woda
+                        // Standardowe obramowanie dla pustej wody
                         rect.setStroke(Color.web("#16213e"));
+                        rect.setStrokeWidth(0.5);
                     }
                 }
             }
@@ -61,23 +73,41 @@ public class UIUtils {
         return false;
     }
 
+    public static void updateAttackUI(StackPane pane, AttackResult result) {
+        Rectangle rect = (Rectangle) pane.getChildren().get(0);
+        Label mark = (Label) pane.getChildren().get(1);
+
+        switch (result) {
+            case HIT -> {
+                // Tylko znak X, tło zostaje (woda lub heatmapa)
+                mark.setText("X");
+                mark.setStyle("-fx-text-fill: #ff4d4d; -fx-font-size: 22px; -fx-font-weight: bold;");
+                // Nie zmieniamy rect.setFill!
+            }
+            case SUNK -> {
+                // Znak X i zmiana koloru ramki na czerwony
+                mark.setText("X");
+                mark.setStyle("-fx-text-fill: #b30000; -fx-font-size: 22px; -fx-font-weight: bold;");
+                rect.setStroke(Color.web("#b30000")); // Czerwona ramka dla zatopionego
+                rect.setStrokeWidth(3.0);
+            }
+            case MISS -> {
+                mark.setText("•");
+                mark.setStyle("-fx-text-fill: #3498db; -fx-font-size: 20px;");
+                rect.setFill(COLOR_WATER);
+                rect.setStroke(Color.web("#16213e"));
+                rect.setStrokeWidth(0.5);
+            }
+        }
+    }
+
     public static void colorAiAttack(GridPane grid, AttackOutcome outcome) {
         grid.getChildren().forEach(node -> {
-            Integer rowIndex = GridPane.getRowIndex(node);
-            Integer colIndex = GridPane.getColumnIndex(node);
-
-            int r = rowIndex == null ? 0 : rowIndex;
-            int c = colIndex == null ? 0 : colIndex;
-
-            if (r == outcome.row() && c == outcome.column() && node instanceof Rectangle cell) {
-                Color color = switch (outcome.result()) {
-                    case HIT, SUNK -> Color.RED;
-                    case MISS -> Color.BLUE;
-                    case ALREADY_SHOT -> null;
-                };
-
-                if (color != null) {
-                    cell.setFill(color);
+            if (node instanceof StackPane pane) {
+                Integer r = GridPane.getRowIndex(pane);
+                Integer c = GridPane.getColumnIndex(pane);
+                if (r != null && c != null && r == outcome.row() && c == outcome.column()) {
+                    updateAttackUI(pane, outcome.result());
                 }
             }
         });
