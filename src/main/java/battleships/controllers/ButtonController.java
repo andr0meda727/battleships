@@ -41,16 +41,19 @@ public class ButtonController {
 
     private void handleReset() {
         if (gameManager.isGameStarted()) {
-            boolean confirmed = UIUtils.showConfirmationDialog(
-                    "Reset gry",
-                    "Czy na pewno chcesz zresetować grę?"
-            );
+            boolean confirmed = UIUtils.showConfirmationDialog("Reset gry", "Czy na pewno chcesz zresetować grę?");
             if (!confirmed) return;
         }
 
+        // 1. Reset logiki gry
         gameManager.resetGame();
+
+        // 2. Reset Twojej planszy (korzysta z Twojej nowej logiki ze stroke)
         UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
-        UIUtils.colorBlank(enemyGrid);
+
+        // 3. Reset planszy bota (czyścimy znaki X i kropki)
+        UIUtils.resetEnemyGrid(enemyGrid);
+
         chosenLabel.setText("Wybrany poziom: ");
 
         if (onResetCallback != null) {

@@ -58,20 +58,6 @@ public class UIUtils {
         });
     }
 
-    public static boolean colorPlayerAttack(Rectangle cell, AttackResult result) {
-        Color color = switch (result) {
-            case HIT -> Color.RED;
-            case MISS -> Color.BLUE;
-            case SUNK -> Color.DARKRED;
-            case ALREADY_SHOT -> null;
-        };
-
-        if (color != null) {
-            cell.setFill(color);
-            return true;
-        }
-        return false;
-    }
 
     public static void updateAttackUI(StackPane pane, AttackResult result) {
         Rectangle rect = (Rectangle) pane.getChildren().get(0);
@@ -132,5 +118,23 @@ public class UIUtils {
         return alert.showAndWait()
                 .filter(response -> response == ButtonType.OK)
                 .isPresent();
+    }
+
+    public static void resetEnemyGrid(GridPane grid) {
+        grid.getChildren().forEach(node -> {
+            if (node instanceof StackPane pane) {
+                // Zakładamy: index 0 to Rectangle, index 1 to Label
+                Rectangle rect = (Rectangle) pane.getChildren().get(0);
+                Label mark = (Label) pane.getChildren().get(1);
+
+                // Resetujemy kolor tła na wodę
+                rect.setFill(COLOR_WATER);
+                rect.setStroke(Color.web("#16213e"));
+                rect.setStrokeWidth(0.5);
+
+                // KLUCZOWE: Czyścimy znak X lub kropkę
+                mark.setText("");
+            }
+        });
     }
 }

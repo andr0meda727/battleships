@@ -90,6 +90,7 @@ public class GameStateManager {
 
         player.reset();
         if (botPlayer != null) {
+            botPlayer.reset();
             botPlayer = null;
         }
 
