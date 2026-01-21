@@ -1,4 +1,5 @@
 package battleships.models;
+import battleships.config.GameConfig;
 
 public record Coordinate(int row, int column) {
     public Coordinate {
@@ -7,7 +8,8 @@ public record Coordinate(int row, int column) {
         }
     }
 
-    public boolean isValid(int boardSize) {
-        return row >= 0 && row < boardSize && column >= 0 && column < boardSize;
+    public static boolean isValid(int row, int col) {
+        int size = GameConfig.getInstance().getBoardSize();
+        return row >= 0 && row < size && col >= 0 && col < size;
     }
 }

@@ -33,9 +33,4 @@ public class RandomAttackStrategy implements AttackStrategy {
     public void reset() {
         // Strategia losowa nie ma stanu do zresetowania
     }
-
-    @Override
-    public String getStrategyName() {
-        return "Random Attack";
-    }
 }

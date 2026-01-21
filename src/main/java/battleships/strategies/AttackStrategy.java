@@ -8,7 +8,4 @@ public interface AttackStrategy {
 
     // Resetuje stan strategii (np. po rozpoczęciu nowej gry).
     void reset();
-
-    // Zwraca nazwę strategii dla celów diagnostycznych.
-    String getStrategyName();
 }

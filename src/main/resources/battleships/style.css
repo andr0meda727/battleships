@@ -1,0 +1,62 @@
+/* src/main/resources/battleships/style.css */
+.root {
+    -fx-background-color: #1a1a2e;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.label {
+    -fx-text-fill: #e9ecef;
+}
+
+.button {
+    -fx-background-color: #16213e;
+    -fx-text-fill: white;
+    -fx-border-color: #4361ee;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-transition: 0.3s;
+}
+
+.button:hover {
+    -fx-background-color: #4361ee;
+}
+
+#startButton {
+    -fx-background-color: #4CAF50;
+    -fx-border-color: transparent;
+}
+
+#startButton:hover {
+    -fx-background-color: #45a049;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.grid-cell {
+    -fx-stroke: #16213e;
+    -fx-stroke-width: 1;
+}
+
+.list-view {
+    -fx-background-color: #16213e;
+    -fx-border-color: #4361ee;
+    -fx-background-insets: 0;
+}
+
+.list-cell {
+    -fx-background-color: #16213e;
+    -fx-text-fill: white;
+}
+
+.list-cell:selected {
+    -fx-background-color: #4361ee;
+}
+
+.stats-container {
+    -fx-background-color: #0f3460;
+    -fx-border-color: #4361ee;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+}

@@ -11,9 +11,7 @@ import battleships.strategies.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Manager stanu gry z wzorcem Observer.
- */
+
 public class GameStateManager {
     private final Player player;
     private BotPlayer botPlayer;
@@ -94,6 +92,8 @@ public class GameStateManager {
         if (botPlayer != null) {
             botPlayer = null;
         }
+
+        observers.forEach(GameObserver::onGameReset);
     }
 
     public void endGame(boolean playerWon) {

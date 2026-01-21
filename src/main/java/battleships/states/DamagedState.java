@@ -19,14 +19,4 @@ public class DamagedState implements ShipState {
     public boolean isSunk() {
         return false;
     }
-
-    @Override
-    public String getStateName() {
-        return "Damaged";
-    }
-
-    @Override
-    public String getStateColor() {
-        return "#FF9800"; // Pomarańczowy
-    }
 }

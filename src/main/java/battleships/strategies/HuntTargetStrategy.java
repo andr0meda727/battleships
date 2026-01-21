@@ -9,10 +9,6 @@ import battleships.models.Coordinate;
 
 import java.util.*;
 
-/**
- * Strategia Hunt/Target - poziom średni.
- * Wykorzystuje tryb "polowania" (losowe strzały) i "celowania" (systematyczne niszczenie statku).
- */
 public class HuntTargetStrategy implements AttackStrategy {
     private final Random random;
     private Mode mode;
@@ -138,7 +134,12 @@ public class HuntTargetStrategy implements AttackStrategy {
     private void addAdjacentTargets(Coordinate coord) {
         int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
         for (int[] dir : directions) {
-            potentialTargets.add(new Coordinate(coord.row() + dir[0], coord.column() + dir[1]));
+            int r = coord.row() + dir[0];
+            int c = coord.column() + dir[1];
+
+            if (Coordinate.isValid(r, c)) {
+                potentialTargets.add(new Coordinate(r, c));
+            }
         }
     }
 
@@ -169,7 +170,12 @@ public class HuntTargetStrategy implements AttackStrategy {
         for (Coordinate coord : shipCoordinates) {
             for (int dr = -1; dr <= 1; dr++) {
                 for (int dc = -1; dc <= 1; dc++) {
-                    excludedCoordinates.add(new Coordinate(coord.row() + dr, coord.column() + dc));
+                    int r = coord.row() + dr;
+                    int c = coord.column() + dc;
+
+                    if (Coordinate.isValid(r, c)) {
+                        excludedCoordinates.add(new Coordinate(r, c));
+                    }
                 }
             }
         }
@@ -182,10 +188,5 @@ public class HuntTargetStrategy implements AttackStrategy {
         currentHits.clear();
         potentialTargets.clear();
         excludedCoordinates.clear();
-    }
-
-    @Override
-    public String getStrategyName() {
-        return "Hunt/Target";
     }
 }

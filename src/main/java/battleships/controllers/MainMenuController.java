@@ -37,6 +37,7 @@ public class MainMenuController {
     @FXML private Button startButton;
     @FXML private CheckBox showHeatmapCheckbox;
     @FXML private Label statsLabel;
+    private ButtonController buttonController;
 
     private GameStateManager gameManager;
     private HeatmapVisualizer heatmapVisualizer;
@@ -81,7 +82,7 @@ public class MainMenuController {
 
         ButtonController buttonController = loader.getController();
         buttonController.initialize(gameManager, playerGrid, enemyGrid,
-                difficultyBoxController.getChosenLabel());
+                difficultyBoxController.getChosenLabel(), this::resetUI);
     }
 
     private void setupStartButton() {
@@ -113,6 +114,7 @@ public class MainMenuController {
 
     private void setupStatsDisplay() {
         statsLabel = new Label("Statystyki:\n-");
+        statsLabel.setStyle("-fx-text-fill: #4cc9f0; -fx-font-size: 13px; -fx-font-weight: bold;");
         if (statsBox != null) {
             statsBox.getChildren().add(statsLabel);
         }
@@ -122,7 +124,8 @@ public class MainMenuController {
         if (showHeatmapCheckbox.isSelected() && gameManager.isGameStarted()) {
             heatmapVisualizer.updateHeatmap(playerGrid, gameManager);
         } else {
-            heatmapVisualizer.clearHeatmap(playerGrid);
+            // Dodano gameManager jako drugi parametr
+            heatmapVisualizer.clearHeatmap(playerGrid, gameManager);
             UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
         }
     }
@@ -130,11 +133,20 @@ public class MainMenuController {
     private void updateStats() {
         if (statisticsObserver != null) {
             statsLabel.setText(String.format(
-                    "Statystyki:\n" +
-                            "Gracz: %.1f%% celności\n" +
-                            "AI: %.1f%% celności",
+                    "STATYSTYKI BITWY\n" +
+                            "─────────────────\n" +
+                            "CELNOŚĆ:\n" +
+                            "  Gracz: %.1f%%\n" +
+                            "  AI:    %.1f%%\n" +
+                            "ZATOPIONE:\n" +
+                            "  Twoje: %d\n" +
+                            "  Wroga: %d",
                     statisticsObserver.getPlayerAccuracy(),
-                    statisticsObserver.getAiAccuracy()
+                    statisticsObserver.getAiAccuracy(),
+                    // Zakładając dodanie getterów do StatisticsObserver lub użycie pól
+                    gameManager.getPlayer().getBoard().getShips().stream().filter(s -> s.isSunk()).count(),
+                    gameManager.getAiPlayer() != null ?
+                            gameManager.getAiPlayer().getBoard().getShips().stream().filter(s -> s.isSunk()).count() : 0
             ));
         }
     }
@@ -214,6 +226,13 @@ public class MainMenuController {
         String message = playerWon ? "Gratulacje! Wygrałeś!" : "Niestety przegrałeś!";
         String fullMessage = message + "\n\n" + statisticsObserver.getReport();
         UIUtils.showEndGamePopup(fullMessage, gameManager);
+    }
+
+    public void resetUI() {
+        startButton.setDisable(false);
+        startButton.setText("ROZPOCZNIJ BITWĘ");
+        updateStats();
+        heatmapVisualizer.clearHeatmap(playerGrid, gameManager);
     }
 
     private void updateUI() {

@@ -49,6 +49,11 @@ public class StatisticsObserver implements GameObserver {
         );
     }
 
+    @Override
+    public void onGameReset() {
+        reset();
+    }
+
     public void reset() {
         playerShots = playerHits = aiShots = aiHits = 0;
         playerShipsSunk = aiShipsSunk = 0;

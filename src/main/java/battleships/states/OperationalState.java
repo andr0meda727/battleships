@@ -17,14 +17,4 @@ public class OperationalState implements ShipState {
     public boolean isSunk() {
         return false;
     }
-
-    @Override
-    public String getStateName() {
-        return "Operational";
-    }
-
-    @Override
-    public String getStateColor() {
-        return "#4CAF50"; // Zielony
-    }
 }

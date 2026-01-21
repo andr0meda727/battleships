@@ -15,13 +15,15 @@ public class ButtonController {
     private GridPane playerGrid;
     private GridPane enemyGrid;
     private Label chosenLabel;
+    private Runnable onResetCallback;
 
     public void initialize(GameStateManager gameManager, GridPane playerGrid,
-                           GridPane enemyGrid, Label chosenLabel) {
+                           GridPane enemyGrid, Label chosenLabel, Runnable onResetCallback) {
         this.gameManager = gameManager;
         this.playerGrid = playerGrid;
         this.enemyGrid = enemyGrid;
         this.chosenLabel = chosenLabel;
+        this.onResetCallback = onResetCallback;
 
         placeButton.setOnAction(event -> handlePlaceShips());
         resetButton.setOnAction(event -> handleReset());
@@ -43,7 +45,6 @@ public class ButtonController {
                     "Reset gry",
                     "Czy na pewno chcesz zresetować grę?"
             );
-
             if (!confirmed) return;
         }
 
@@ -51,5 +52,9 @@ public class ButtonController {
         UIUtils.colorGrid(playerGrid, gameManager.getPlayer().getBoard().board);
         UIUtils.colorBlank(enemyGrid);
         chosenLabel.setText("Wybrany poziom: ");
+
+        if (onResetCallback != null) {
+            onResetCallback.run();
+        }
     }
 }

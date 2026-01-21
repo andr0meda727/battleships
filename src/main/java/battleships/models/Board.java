@@ -3,6 +3,7 @@ package battleships.models;
 import battleships.enums.AttackResult;
 import battleships.enums.Orientation;
 import battleships.factories.ShipFactory;
+import battleships.config.GameConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,8 +11,8 @@ import java.util.List;
 import java.util.Random;
 
 public class Board {
-    private static final int BOARD_SIZE = 10;
-    private final List<Integer> shipLengths = Arrays.asList(2, 3, 3, 4, 5);
+    private final int boardSize = GameConfig.getInstance().getBoardSize();
+//    private final List<Integer> shipLengths = Arrays.asList(2, 3, 3, 4, 5);
 
     public Cell[][] board;
     private int shipsSunk;
@@ -19,7 +20,7 @@ public class Board {
     private final Random random;
 
     public Board() {
-        this.board = new Cell[BOARD_SIZE][BOARD_SIZE];
+        this.board = new Cell[boardSize][boardSize];
         this.ships = new ArrayList<>();
         this.random = new Random();
         initializeBoard();
@@ -27,8 +28,8 @@ public class Board {
     }
 
     private void initializeBoard() {
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 board[i][j] = new Cell();
             }
         }
@@ -38,15 +39,17 @@ public class Board {
         ships.clear();
         shipsSunk = 0;
 
-        for (int length : shipLengths) {
-            Ship ship = ShipFactory.createShip(length); // Factory Pattern
+        Ship[] fleet = ShipFactory.createFleet();
+
+        for (Ship ship : fleet) {
             ships.add(ship);
+            int length = ship.getLength();
 
             boolean placed = false;
             int attempts = 0;
             while (!placed && attempts < 1000) {
-                int row = random.nextInt(BOARD_SIZE);
-                int col = random.nextInt(BOARD_SIZE);
+                int row = random.nextInt(boardSize);
+                int col = random.nextInt(boardSize);
                 Orientation orientation = random.nextBoolean() ?
                         Orientation.HORIZONTAL : Orientation.VERTICAL;
 
@@ -61,21 +64,21 @@ public class Board {
 
     private boolean canPlaceShip(int row, int col, int length, Orientation orientation) {
         if (orientation == Orientation.HORIZONTAL) {
-            if (col + length > BOARD_SIZE) return false;
+            if (col + length > boardSize) return false;
 
             for (int r = row - 1; r <= row + 1; r++) {
                 for (int c = col - 1; c <= col + length; c++) {
-                    if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    if (r >= 0 && r < boardSize && c >= 0 && c < boardSize) {
                         if (board[r][c].hasShip()) return false;
                     }
                 }
             }
         } else {
-            if (row + length > BOARD_SIZE) return false;
+            if (row + length > boardSize) return false;
 
             for (int r = row - 1; r <= row + length; r++) {
                 for (int c = col - 1; c <= col + 1; c++) {
-                    if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    if (r >= 0 && r < boardSize && c >= 0 && c < boardSize) {
                         if (board[r][c].hasShip()) return false;
                     }
                 }
@@ -120,7 +123,7 @@ public class Board {
     }
 
     public boolean isGameOver() {
-        return shipsSunk == shipLengths.size();
+        return shipsSunk == ships.size();
     }
 
     public List<Integer> getRemainingShipsLengths() {
@@ -138,6 +141,6 @@ public class Board {
         placeShips();
     }
 
-    public int getBoardSize() { return BOARD_SIZE; }
+    public int getBoardSize() { return boardSize; }
     public List<Ship> getShips() { return new ArrayList<>(ships); }
 }

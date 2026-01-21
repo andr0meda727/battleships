@@ -13,15 +13,26 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class UIUtils {
+    public static final Color COLOR_WATER = Color.web("#2c3e50");
+    public static final Color COLOR_SHIP = Color.web("#95a5a6");
+    public static final Color COLOR_HIT = Color.web("#e74c3c");
+    public static final Color COLOR_MISS = Color.web("#3498db");
+    public static final Color COLOR_SUNK = Color.web("#c0392b");
 
     public static void colorGrid(GridPane grid, Cell[][] board) {
         grid.getChildren().forEach(node -> {
             if (node instanceof Rectangle rect) {
                 Integer col = GridPane.getColumnIndex(rect);
                 Integer row = GridPane.getRowIndex(rect);
-
                 if (row != null && col != null) {
-                    rect.setFill(board[row][col].hasShip() ? Color.HOTPINK : Color.LIGHTGRAY);
+                    if (board[row][col].hasShip()) {
+                        // Twoje statki jako "leciutki zielony"
+                        rect.setFill(Color.web("#2ecc71", 0.7));
+                        rect.setStroke(Color.web("#2ecc71"));
+                    } else {
+                        rect.setFill(Color.web("#2c3e50")); // Woda
+                        rect.setStroke(Color.web("#16213e"));
+                    }
                 }
             }
         });

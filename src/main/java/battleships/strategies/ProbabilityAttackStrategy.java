@@ -9,10 +9,7 @@ import battleships.models.Ship;
 
 import java.util.*;
 
-/**
- * Strategia oparta na prawdopodobieństwie - poziom trudny.
- * Oblicza prawdopodobieństwo obecności statku dla każdego pola i atakuje najbardziej prawdopodobne cele.
- */
+
 public class ProbabilityAttackStrategy implements AttackStrategy {
     private static final int ADJACENT_HIT_BONUS = 1000;
 
@@ -44,6 +41,8 @@ public class ProbabilityAttackStrategy implements AttackStrategy {
     }
 
     public int[][] calculateProbabilities(Board playerBoard) {
+        updateExcludedCells(playerBoard);
+
         int boardSize = playerBoard.getBoardSize();
         int[][] probabilities = new int[boardSize][boardSize];
 
@@ -231,7 +230,11 @@ public class ProbabilityAttackStrategy implements AttackStrategy {
         for (Coordinate cell : shipCells) {
             for (int dr = -1; dr <= 1; dr++) {
                 for (int dc = -1; dc <= 1; dc++) {
-                    excludedCoordinates.add(new Coordinate(cell.row() + dr, cell.column() + dc));
+                    int r = cell.row() + dr;
+                    int c = cell.column() + dc;
+                    if (Coordinate.isValid(r, c)) {
+                        excludedCoordinates.add(new Coordinate(r, c));
+                    }
                 }
             }
         }
@@ -248,10 +251,5 @@ public class ProbabilityAttackStrategy implements AttackStrategy {
         excludedCoordinates.clear();
         processedSunkCells.clear();
         detectedOrientation = Orientation.UNKNOWN;
-    }
-
-    @Override
-    public String getStrategyName() {
-        return "Probability-Based";
     }
 }

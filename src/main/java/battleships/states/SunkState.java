@@ -13,14 +13,4 @@ public class SunkState implements ShipState {
     public boolean isSunk() {
         return true;
     }
-
-    @Override
-    public String getStateName() {
-        return "Sunk";
-    }
-
-    @Override
-    public String getStateColor() {
-        return "#F44336"; // Czerwony
-    }
 }
